@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Uranus</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script>
+
+			var radius=2, segments=50, rotation=5;
+			var scene = new THREE.Scene();
+
+			//Create a new perspective camera
+			var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+			camera.position.set(0,0,10);
+
+			//Create the WebGL renderer and set its size to the full dimensions of the screen.
+			var renderer = new THREE.WebGLRenderer({antialias: true});
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			
+			//Add the renderer canvas to the DOM.
+			document.body.appendChild(renderer.domElement);
+			
+			//Create a new ambient light
+			var light = new THREE.AmbientLight( 0x888888 )
+			scene.add( light )
+
+			//Create a new directional light
+			var light = new THREE.DirectionalLight( 0xfdfcf0, 1 )
+			light.position.set(20,10,20)
+			scene.add( light )
+
+			//Create geometry and material
+			var uranusGeometry = new THREE.SphereGeometry( radius, segments, segments );
+			var texture = new THREE.TextureLoader().load( 'uranus_texture.jpg' );
+
+			// immediately use the texture for material creation
+			var uranusMaterial = new THREE.MeshBasicMaterial( { map: texture,color: 0xaaaaaa,
+				specular: 0x333333,
+				shininess: 25 } );
+
+			//Build uranus mesh using our geometry and material
+			var uranus = new THREE.Mesh(uranusGeometry, uranusMaterial);
+
+			//add the uranus mesh to the scene
+			scene.add(uranus);
+
+			// var ringsGeometry = new THREE.RingGeometry( 3.6, 6, 100,5,0,Math.PI * 2 );
+			// var ringsMaterial = new THREE.MeshBasicMaterial( { map: texture, color: 0xffff00, side: THREE.DoubleSide } );
+			// var rings = new THREE.Mesh( ringsGeometry, ringsMaterial );
+			// scene.add( rings );
+
+			var rings=createRings(radius, segments); 
+			rings.rotation.y = rotation; 
+			scene.add(rings);
+
+			function createRings(radius, segments){
+				return new THREE.Mesh(new THREE.RingGeometry(1.2 * radius, 2 * radius, 2 * segments, 5, 0, Math.PI * 2), 
+					new THREE.MeshBasicMaterial({ 
+					map: THREE.ImageUtils.loadTexture('saturnringcolor.jpg'), 
+					side: THREE.DoubleSide, transparent: true, opacity: 0.6 })
+			); }
+
+			//start of moon 1
+			var sizeOfOrbit1 = 9;
+			var geometry = new THREE.CircleGeometry(sizeOfOrbit1, 100);
+			geometry.vertices.shift();
+
+			var circle = new THREE.Line(
+				geometry,
+				new THREE.LineDashedMaterial({color: 'aqua'})
+			);
+			circle.rotation.x = Math.PI * 0.5;
+
+			var planet = new THREE.Mesh(
+				new THREE.SphereBufferGeometry(1, 32, 32),
+				new THREE.MeshPhongMaterial({color: 'yellow'})
+			);
+			planet.position.set(sizeOfOrbit1, 0, 0);
+
+			//start of moon 2
+			var sizeOfOrbit2 = 15;
+			var geometry2 = new THREE.CircleGeometry(sizeOfOrbit2, 100);
+			geometry2.vertices.shift();
+
+			var circle2 = new THREE.Line(
+				geometry2,
+				new THREE.LineDashedMaterial({color: 'aqua'})
+			);
+			circle2.rotation.x = Math.PI * 0.5;
+
+			var moon2 = new THREE.Mesh(
+				new THREE.SphereBufferGeometry(1, 32, 32),
+				new THREE.MeshPhongMaterial({color: 'yellow'})
+			);
+			moon2.position.set(sizeOfOrbit2, 0, 0);
+
+			orbit1 = new THREE.Group();
+			orbit1.add(circle);
+			orbit1.add(planet);
+
+			orbit2 = new THREE.Group();
+			orbit2.add(circle2);
+			orbit2.add(moon2);
+
+			var orbitDir = new THREE.Group();
+			orbitDir.rotation.x = 0.25;
+			orbitDir.add(orbit1);
+			orbitDir.add(orbit2);
+			scene.add(orbitDir);
+
+
+			//Pull the camera back a bit
+			camera.position.z = 30;
+
+			var render = function (actions) {
+				renderer.render(scene, camera);
+				requestAnimationFrame( render );
+			};
+			render();
+
+			var animate = function () {
+				requestAnimationFrame( animate );
+
+				uranus.rotation.x += 0.01;
+				uranus.rotation.y += 0.01;
+				orbit1.rotation.y += 0.02;
+				orbit2.rotation.y += 0.01;
+
+				renderer.render( scene, camera );
+			};
+			
+
+			animate();
+		</script>
+	</body>
+</html>
