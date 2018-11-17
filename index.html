@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset=utf-8>
-		<title>Uranus</title>
+		<title>Saturn</title>
 		<style>
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
@@ -11,8 +11,8 @@
 	<body>
 		<script src="js/three.js"></script>
 		<script>
-
 			var radius=2, segments=50, rotation=5;
+
 			var scene = new THREE.Scene();
 
 			//Create a new perspective camera
@@ -29,76 +29,77 @@
 			//Create a new ambient light
 			var light = new THREE.AmbientLight( 0x888888 )
 			scene.add( light )
-
 			//Create a new directional light
 			var light = new THREE.DirectionalLight( 0xfdfcf0, 1 )
 			light.position.set(20,10,20)
 			scene.add( light )
 
 			//Create geometry and material
-			var uranusGeometry = new THREE.SphereGeometry( radius, segments, segments );
-			var texture = new THREE.TextureLoader().load( 'uranus_texture.jpg' );
-
+			var saturnGeometry = new THREE.SphereGeometry( radius, segments, segments );
+			var texture = new THREE.TextureLoader().load( 'redmaterial.jpg' );
 			// immediately use the texture for material creation
-			var uranusMaterial = new THREE.MeshBasicMaterial( { map: texture,color: 0xaaaaaa,
+			var saturnMaterial = new THREE.MeshBasicMaterial( { map: texture,color: 0xaaaaaa,
 				specular: 0x333333,
 				shininess: 25 } );
-
-			//Build uranus mesh using our geometry and material
-			var uranus = new THREE.Mesh(uranusGeometry, uranusMaterial);
-
-			//add the uranus mesh to the scene
-			scene.add(uranus);
-
+			//Build saturn mesh using our geometry and material
+			var saturn = new THREE.Mesh(saturnGeometry, saturnMaterial);
+			//add the saturn mesh to the scene
+			scene.add(saturn);
+			
+			//Add saturn Rings
 			var rings=createRings(radius, segments); 
-			rings.rotation.y = rotation; 
+			rings.rotation.y = 3;
+			rings.rotation.x = 5;
 			scene.add(rings);
-
+			//Function to create the geometry and material
 			function createRings(radius, segments){
 				return new THREE.Mesh(new THREE.RingGeometry(1.2 * radius, 2 * radius, 2 * segments, 5, 0, Math.PI * 2), 
 					new THREE.MeshBasicMaterial({ 
-					map: THREE.ImageUtils.loadTexture('saturnringcolor.jpg'), 
-					side: THREE.DoubleSide, transparent: true, opacity: 0.6 })
+					map: THREE.ImageUtils.loadTexture('saturnRings.png'), 
+					side: THREE.DoubleSide, transparent: true, opacity: 0.8 })
 			); }
 
 			//start of moon 1
 			var sizeOfOrbit1 = 9;
 			var geometry = new THREE.CircleGeometry(sizeOfOrbit1, 100);
 			geometry.vertices.shift();
-
 			var circle = new THREE.Line(
 				geometry,
 				new THREE.LineDashedMaterial({color: 'aqua'})
 			);
 			circle.rotation.x = Math.PI * 0.5;
-
 			var planet = new THREE.Mesh(
 				new THREE.SphereBufferGeometry(1, 32, 32),
-				new THREE.MeshPhongMaterial({color: 'yellow'})
+				new THREE.MeshPhongMaterial({ 
+					map: THREE.ImageUtils.loadTexture('moon_texture.jpg'), 
+					side: THREE.DoubleSide, transparent: true, opacity: 1.0 })
 			);
 			planet.position.set(sizeOfOrbit1, 0, 0);
-
+			
 			//start of moon 2
 			var sizeOfOrbit2 = 15;
 			var geometry2 = new THREE.CircleGeometry(sizeOfOrbit2, 100);
 			geometry2.vertices.shift();
-
 			var circle2 = new THREE.Line(
 				geometry2,
 				new THREE.LineDashedMaterial({color: 'aqua'})
 			);
+			
 			circle2.rotation.x = Math.PI * 0.5;
-
 			var moon2 = new THREE.Mesh(
 				new THREE.SphereBufferGeometry(1, 32, 32),
-				new THREE.MeshPhongMaterial({color: 'yellow'})
+				new THREE.MeshPhongMaterial({ 
+					map: THREE.ImageUtils.loadTexture('moon_texture.jpg'), 
+					side: THREE.DoubleSide, transparent: true, opacity: 1.0 })
 			);
 			moon2.position.set(sizeOfOrbit2, 0, 0);
 
+			//add orbit 1(Moon 1)
 			orbit1 = new THREE.Group();
 			orbit1.add(circle);
 			orbit1.add(planet);
 
+			//add orbit 2(Moon 2)
 			orbit2 = new THREE.Group();
 			orbit2.add(circle2);
 			orbit2.add(moon2);
@@ -109,28 +110,64 @@
 			orbitDir.add(orbit2);
 			scene.add(orbitDir);
 
-
 			//Pull the camera back a bit
 			camera.position.z = 30;
+
+			//keyboard event listener
+			//hold down the left arrow key to make the moons revolve 
+			document.addEventListener("keydown", Keyboard, false);
+			function Keyboard(event) {
+				var keyCode = event.which;
+				if (keyCode == 37) {
+					animate();
+				}//Arrow up
+				else if(keyCode == 38){ 
+                    camera.position.z -= 10; 
+				} // Arrow down
+				else if(keyCode == 39){ 
+                    reverseAnimate();
+				}
+				else if(keyCode == 40){ 
+					camera.position.z += 10; 
+				} // Change camera position on y axis
+				else if(keyCode == 36){
+					camera.position.y += 5;
+				} 
+				else if(keyCode == 35){
+					camera.position.y -= 5;
+				}// Change camera position on x axis 
+				else if(keyCode == 33){
+					camera.position.x += 5;
+				}
+				else if(keyCode == 34){
+					camera.position.x -= 5;
+				}
+				
+			}
 
 			var render = function (actions) {
 				renderer.render(scene, camera);
 				requestAnimationFrame( render );
 			};
 			render();
-
 			var animate = function () {
 				requestAnimationFrame( animate );
-
-				uranus.rotation.x += 0.01;
-				uranus.rotation.y += 0.01;
+				saturn.rotation.x += 0.01;
+				saturn.rotation.y += 0.01;
 				orbit1.rotation.y += 0.02;
 				orbit2.rotation.y += 0.01;
 
 				renderer.render( scene, camera );
 			};
-		
-			animate();
+			var reverseAnimate = function () {
+				requestAnimationFrame( reverseAnimate );
+				
+				orbit1.rotation.y -= 0.02;
+				orbit2.rotation.y -= 0.01;
+
+				renderer.render( scene, camera );
+			};
+			
 		</script>
 	</body>
 </html>
